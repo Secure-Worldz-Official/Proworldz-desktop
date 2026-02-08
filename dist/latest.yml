@@ -1,8 +1,8 @@
-version: 1.0.2
+version: 1.0.6
 files:
   - url: eaglone-ide.exe
-    sha512: UgA1ythy/uzSn1ei5UjUQAxE2gGC/Cxlaz36CSgmA69AMFxdwCh0icDWoTxqkZsMWPrI907pxamLscrXsDsD8g==
-    size: 99077504
+    sha512: a9F5z4t40Mdikrb6KAiS1g68nou+2k4mh0rOFJFvBM+4M/mBWLthF2XckdDCGJmgglrnIeS+7vBA+rj5us9eyA==
+    size: 99077065
 path: eaglone-ide.exe
-sha512: UgA1ythy/uzSn1ei5UjUQAxE2gGC/Cxlaz36CSgmA69AMFxdwCh0icDWoTxqkZsMWPrI907pxamLscrXsDsD8g==
-releaseDate: '2026-02-08T10:28:10.981Z'
+sha512: a9F5z4t40Mdikrb6KAiS1g68nou+2k4mh0rOFJFvBM+4M/mBWLthF2XckdDCGJmgglrnIeS+7vBA+rj5us9eyA==
+releaseDate: '2026-02-08T12:40:10.949Z'
