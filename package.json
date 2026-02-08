@@ -1,0 +1,72 @@
+{
+  "name": "electron-app",
+  "version": "1.0.0",
+  "description": "this is my first electron app",
+  "main": "main.js",
+  "license": "ISC",
+  "author": {
+    "name": "Mohamed Hathim",
+    "email": "mohamed@example.com"
+  },
+  "homepage": "https://proworldz.page.gd",
+
+  "scripts": {
+    "start": "electron . --disable-gpu",
+    "build": "electron-builder"
+  },
+
+  "devDependencies": {
+    "electron": "^40.2.1",
+    "electron-builder": "^26.7.0"
+  },
+
+  "dependencies": {
+    "cors": "^2.8.6",
+    "electron-updater": "^6.7.3",
+    "express": "^5.2.1",
+    "mysql2": "^3.16.3"
+  },
+
+  "build": {
+    "appId": "com.proworldz.electronapp",
+    "productName": "ProWorldz Lab",
+
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Secure-Worldz-Official",
+        "repo": "Proworldz-desktop",
+        "releaseType": "release"
+      }
+    ],
+
+    "files": [
+      "**/*"
+    ],
+
+    "directories": {
+      "output": "dist"
+    },
+
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "artifactName": "eaglone-ide.exe"
+    },
+
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icon.png",
+      "maintainer": "Mohamed Hathim <mohamed@example.com>",
+      "category": "Utility"
+    },
+
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    }
+  }
+}

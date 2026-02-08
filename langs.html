@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Language Lab | ProWorldz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link rel="icon" type="image/png" href="assets/icon.ico">
+
+    
+    <style>
+        :root {
+            --primary-white: #ffffff;
+            --primary-hover: #e0e0e0;
+            --secondary-gray: #d0d0d0;
+            --accent-gray: #a0a0a0;
+            --dark-bg: #000000;
+            --darker-bg: #050505;
+            --card-bg: #111111;
+            --card-hover: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo-frame {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+
+        .logo-main {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .system-status {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem auto 3rem;
+            max-width: 800px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .status-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .status-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .status-icon.installed {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-white);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-icon.not-installed {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-info {
+            flex: 1;
+        }
+
+        .status-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .status-detail {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .languages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .language-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .language-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-white);
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+            transform-origin: left;
+        }
+
+        .language-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--border-hover);
+            background: var(--card-hover);
+        }
+
+        .language-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .language-card.disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .language-card.disabled:hover {
+            transform: none;
+            border-color: var(--border-color);
+            background: var(--card-bg);
+        }
+
+        .installation-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .installation-badge.installed {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-white);
+            border: 1px solid var(--border-color);
+        }
+
+        .installation-badge.not-installed {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .language-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .language-icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            flex-shrink: 0;
+        }
+
+        .language-card:hover .language-icon-container {
+            border-color: var(--primary-white);
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(5deg) scale(1.1);
+        }
+
+        .language-icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+
+        .language-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .language-version {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .language-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat i {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .access-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: var(--primary-white);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .access-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-3px);
+        }
+
+        .access-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .access-btn:disabled:hover {
+            transform: none;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .modal-message {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 0.875rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+            white-space: nowrap;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary-white);
+            color: var(--dark-bg);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        .loading-animation {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .loading-animation span {
+            animation: loadingDots 1.4s infinite;
+            opacity: 0;
+        }
+
+        .loading-animation span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-animation span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loadingDots {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary-white);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .container { max-width: 1000px; }
+            .languages-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+            .main-title { font-size: 3rem; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 1.5rem 1rem; }
+            .logo-frame { width: 120px; height: 120px; margin-bottom: 1rem; }
+            .main-title { font-size: 2.2rem; }
+            .subtitle { font-size: 1rem; }
+            .languages-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+            .language-card { padding: 2rem; }
+            .language-icon-container { width: 70px; height: 70px; }
+            .language-icon { width: 40px; height: 40px; }
+            .language-info h3 { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .main-title { font-size: 1.8rem; }
+            .language-card { padding: 1.5rem; }
+            .language-header { flex-direction: column; text-align: center; gap: 1rem; }
+            .access-btn { padding: 1rem; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-frame">
+                <img src="e-welcome-gen.png" alt="ProWorldz Logo" class="logo-main">
+            </div>
+            <h1 class="main-title">PROGRAMMING LANGUAGE LAB</h1>
+            <p class="subtitle">Select a language and start coding</p>
+
+            <div class="system-status" id="systemStatus">
+                <div class="status-header">
+                    <div class="status-title">
+                        <i class="fas fa-terminal"></i>
+                        System Language Status
+                    </div>
+                    <button class="refresh-btn" onclick="checkInstalledLanguages()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+                <div class="status-grid" id="statusGrid">
+                    <!-- Status items will be dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+        <div class="languages-grid" id="languagesGrid">
+            <!-- Language cards will be dynamically generated -->
+        </div>
+
+        <!-- <div class="footer">
+            <p>© 2026 ProWorldz Programming Language Lab</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">Enterprise Development Environment</p>
+        </div> -->
+    </div>
+
+    <div class="modal-overlay" id="languageModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="modal-title" id="modalTitle">Language Not Installed</h2>
+            <p class="modal-message" id="modalMessage"></p>
+            <div class="modal-actions" id="modalActions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const languagesConfig = [
+        {
+            lang: 'c',
+            name: 'C Language',
+            version: 'ISO C17 Standard',
+            icon: 'logos/c-original.svg',
+            stats: [
+                { icon: 'fa-microchip', text: 'System Level' },
+                { icon: 'fa-bolt', text: 'High Performance' },
+                { icon: 'fa-shield-alt', text: 'Memory Safe' }
+            ]
+        },
+        {
+            lang: 'cpp',
+            name: 'C++',
+            version: 'C++20 Standard',
+            icon: 'logos/cplusplus-original.svg',
+            stats: [
+                { icon: 'fa-cubes', text: 'OOP' },
+                { icon: 'fa-tachometer-alt', text: 'Zero Cost' },
+                { icon: 'fa-code', text: 'STL' }
+            ]
+        },
+        {
+            lang: 'python',
+            name: 'Python',
+            version: 'Python 3.11',
+            icon: 'logos/python-original.svg',
+            stats: [
+                { icon: 'fa-brain', text: 'AI/ML' },
+                { icon: 'fa-chart-line', text: 'Data Science' },
+                { icon: 'fa-spider', text: 'Web Dev' }
+            ]
+        },
+        {
+            lang: 'java',
+            name: 'Java',
+            version: 'Java SE 17',
+            icon: 'logos/java-original.svg',
+            stats: [
+                { icon: 'fa-server', text: 'Enterprise' },
+                { icon: 'fa-mobile-alt', text: 'Android' },
+                { icon: 'fa-cloud', text: 'Cloud Native' }
+            ]
+        },
+        {
+            lang: 'javascript',
+            name: 'JavaScript',
+            version: 'ES2022',
+            icon: 'logos/javascript-original.svg',
+            stats: [
+                { icon: 'fa-globe', text: 'Web' },
+                { icon: 'fa-mobile-alt', text: 'Mobile' },
+                { icon: 'fa-server', text: 'Server' }
+            ]
+        },
+        {
+            "lang": "php",
+            "name": "PHP",
+            "version": "PHP 8.3",
+            "icon": "logos/php-original.svg",
+            "stats": [
+                { "icon": "fa-globe", "text": "Web First" },
+                { "icon": "fa-server", "text": "Server Side" },
+                { "icon": "fa-bolt", "text": "Fast Execution" }
+            ]
+        },
+        {
+            lang: 'go',
+            name: 'Go',
+            version: 'Go 1.21',
+            icon: 'logos/go-original.svg',
+            stats: [
+                { icon: 'fa-running', text: 'Concurrent' },
+                { icon: 'fa-bolt', text: 'Fast Compile' },
+                { icon: 'fa-network-wired', text: 'Network' }
+            ]
+        }
+    ];
+
+    let languageStatus = {};
+
+    // Real function to check installed languages using Node.js
+    async function checkLanguageInstalled(lang) {
+        if (window.electronAPI) {
+            try {
+                return await window.electronAPI.checkLanguage(lang);
+            } catch (error) {
+                console.error('Error checking language:', error);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    async function checkInstalledLanguages() {
+        const statusGrid = document.getElementById('statusGrid');
+        const refreshBtn = document.querySelector('.refresh-btn');
+        const originalText = refreshBtn.innerHTML;
+        
+        refreshBtn.innerHTML = '<div class="spinner"></div>';
+        statusGrid.innerHTML = '<div class="status-item"><div class="spinner"></div><span>Checking installed languages...</span></div>';
+        
+        if (window.electronAPI) {
+            try {
+                // Get all languages at once
+                languageStatus = await window.electronAPI.checkAllLanguages();
+            } catch (error) {
+                console.error('Error checking all languages:', error);
+                languageStatus = {};
+            }
+        } else {
+            // Fallback if not in Electron
+            languageStatus = {};
+        }
+        
+        renderStatusGrid();
+        renderLanguageCards();
+        refreshBtn.innerHTML = originalText;
+    }
+
+    function renderStatusGrid() {
+        const statusGrid = document.getElementById('statusGrid');
+        statusGrid.innerHTML = '';
+        
+        languagesConfig.forEach(config => {
+            const isInstalled = languageStatus[config.lang] || false;
+            const statusItem = document.createElement('div');
+            statusItem.className = 'status-item';
+            statusItem.innerHTML = `
+                <div class="status-icon ${isInstalled ? 'installed' : 'not-installed'}">
+                    <i class="fas ${isInstalled ? 'fa-check' : 'fa-times'}"></i>
+                </div>
+                <div class="status-info">
+                    <div class="status-name">${config.name}</div>
+                    <div class="status-detail">${isInstalled ? 'Installed ✓' : 'Not Found ✗'}</div>
+                </div>
+            `;
+            statusGrid.appendChild(statusItem);
+        });
+    }
+
+    function renderLanguageCards() {
+        const grid = document.getElementById('languagesGrid');
+        grid.innerHTML = '';
+        
+        languagesConfig.forEach(config => {
+            const isInstalled = languageStatus[config.lang] || false;
+            const card = document.createElement('div');
+            card.className = `language-card ${!isInstalled ? 'disabled' : ''}`;
+            card.dataset.lang = config.lang;
+            
+            const statsHTML = config.stats
+                .map(stat => `<div class="stat"><i class="fas ${stat.icon}"></i><span>${stat.text}</span></div>`)
+                .join('');
+            
+            const badgeClass = isInstalled ? 'installed' : 'not-installed';
+            const badgeText = isInstalled ? 'Installed' : 'Not Installed';
+            const badgeIcon = isInstalled ? 'fa-check' : 'fa-times';
+            
+            card.innerHTML = `
+                <div class="installation-badge ${badgeClass}">
+                    <i class="fas ${badgeIcon}"></i>
+                    ${badgeText}
+                </div>
+                <div class="language-header">
+                    <div class="language-icon-container">
+                        <img src="${config.icon}" alt="${config.name}" class="language-icon" loading="lazy">
+                    </div>
+                    <div class="language-info">
+                        <h3>${config.name}</h3>
+                        <div class="language-version">${config.version}</div>
+                    </div>
+                </div>
+                <div class="language-stats">
+                    ${statsHTML}
+                </div>
+                <button class="access-btn" onclick="accessLab('${config.lang}')" ${!isInstalled ? 'disabled' : ''}>
+                    <i class="fas fa-rocket"></i>
+                    <span>Launch ${config.name}</span>
+                </button>
+            `;
+            
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.access-btn')) {
+                    const btn = card.querySelector('.access-btn');
+                    if (!btn.disabled) btn.click();
+                }
+            });
+            
+            grid.appendChild(card);
+        });
+    }
+
+    async function accessLab(language) {
+        const card = document.querySelector(`[data-lang="${language}"]`);
+        const btn = card.querySelector('.access-btn');
+        const originalContent = btn.innerHTML;
+        
+        // Double-check before launching
+        const isInstalled = await checkLanguageInstalled(language);
+        
+        if (!isInstalled) {
+            showLanguageNotInstalledModal(language);
+            return;
+        }
+        
+        btn.innerHTML = `
+            <div class="spinner"></div>
+            Initializing Environment
+        `;
+        btn.disabled = true;
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        btn.innerHTML = `
+            <i class="fas fa-check"></i>
+            Launching Lab
+        `;
+        
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        window.location.href = `code-editor.html?lang=${language}`;
+    }
+
+    function showLanguageNotInstalledModal(language) {
+        const config = languagesConfig.find(c => c.lang === language);
+        const modal = document.getElementById('languageModal');
+        const icon = document.getElementById('modalIcon');
+        const title = document.getElementById('modalTitle');
+        const message = document.getElementById('modalMessage');
+        
+        icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        title.textContent = `${config.name} Not Installed`;
+        message.textContent = `The ${config.name} runtime is not installed on your system. Please install ${config.name} to use this environment.`;
+        
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('languageModal').classList.remove('active');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        await checkInstalledLanguages();
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    });
+</script>
+</body>
+</html>

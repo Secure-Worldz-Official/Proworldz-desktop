@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg-primary: #1e1e1e;
+            --color-bg-secondary: #252526;
+            --color-bg-tertiary: #2d2d30;
+            --color-bg-hover: #3e3e42;
+            --color-border: #3e3e42;
+            --color-text-primary: #e0e0e0;
+            --color-text-secondary: #a8a8a8;
+            --color-text-muted: #6a6a6a;
+            --color-accent: #007acc;
+            --color-accent-hover: #0098ff;
+            --color-success: #4ec9b0;
+            --color-warning: #dcdcaa;
+            --color-error: #f48771;
+            --color-highlight-line: rgba(255, 255, 255, 0.05);
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            --font-mono: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: var(--font-sans);
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .menu-bar {
+            display: flex;
+            align-items: center;
+            height: 30px;
+            background-color: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            padding: 0 var(--spacing-lg);
+            font-size: 12px;
+            user-select: none;
+            gap: var(--spacing-lg);
+            flex-shrink: 0;
+        }
+
+        .menu-spacer {
+            flex: 1;
+        }
+
+        .menu-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .menu-btn:hover {
+            background-color: var(--color-bg-hover);
+            border-color: var(--color-accent);
+        }
+
+        .menu-btn i {
+            font-size: 11px;
+        }
+
+        .menu-item {
+            position: relative;
+            padding: var(--spacing-xs) var(--spacing-md);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.15s ease;
+        }
+
+        .menu-item:hover {
+            background-color: var(--color-bg-hover);
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            margin-top: 2px;
+            min-width: 180px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .menu-item:hover .menu-dropdown {
+            display: block;
+        }
+
+        .menu-item-option {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.15s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item-option:hover {
+            background-color: var(--color-bg-hover);
+        }
+
+        .editor-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 1px;
+            background-color: var(--color-border);
+        }
+
+        .ai-panel {
+            width: 320px;
+            min-width: 260px;
+            background-color: var(--color-bg-secondary);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            user-select: none;
+        }
+
+        .ai-messages {
+            flex: 1;
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .ai-message {
+            max-width: 92%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+            background-color: var(--color-bg-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .ai-message.user {
+            align-self: flex-end;
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+        }
+
+        .ai-message.assistant {
+            align-self: flex-start;
+            color: var(--color-success);
+        }
+
+        .ai-message.error {
+            align-self: flex-start;
+            color: var(--color-error);
+        }
+
+        .ai-message .ai-code {
+            display: block;
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            overflow-x: auto;
+            color: var(--color-text-primary);
+        }
+
+        .ai-message .ai-inline-code {
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            padding: 1px 4px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--color-text-primary);
+        }
+
+        .ai-input {
+            border-top: 1px solid var(--color-border);
+            padding: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
+            background-color: var(--color-bg-secondary);
+        }
+
+        .ai-input textarea {
+            flex: 1;
+            min-height: 44px;
+            max-height: 120px;
+            resize: vertical;
+            background-color: var(--color-bg-primary);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.5;
+            padding: var(--spacing-sm);
+            outline: none;
+        }
+
+        .ai-input textarea:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+        }
+
+        .ai-send-btn {
+            padding: 0 var(--spacing-md);
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .ai-send-btn:hover {
+            background-color: var(--color-bg-hover);
+            border-color: var(--color-accent);
+        }
+
+        .editor-container {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .code-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--color-bg-primary);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            display: none;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            height: 48px;
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            gap: var(--spacing-md);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+        }
+
+        .sidebar-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-left: auto;
+        }
+
+        .sidebar-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            transition: all 0.15s ease;
+            font-size: 12px;
+        }
+
+        .sidebar-btn:hover {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-primary);
+        }
+
+        .language-selector {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-md) 0;
+        }
+
+        .language-section {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .section-title {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .language-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin: 0 var(--spacing-sm);
+            cursor: pointer;
+            gap: var(--spacing-sm);
+            font-size: 12px;
+            color: var(--color-text-primary);
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .language-item:hover {
+            background-color: var(--color-bg-hover);
+        }
+
+        .language-item.active {
+            background-color: var(--color-bg-hover);
+            color: var(--color-accent);
+            font-weight: 500;
+        }
+
+        .language-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .language-selector::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .language-selector::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .language-selector::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-bar {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            background-color: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+        }
+
+        .tab-bar::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .tab-bar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .tab-bar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 0 var(--spacing-md);
+            height: 100%;
+            border-right: 1px solid var(--color-border);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            user-select: none;
+            background-color: transparent;
+        }
+
+        .tab:hover {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-primary);
+        }
+
+        .tab.active {
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            border-bottom: 2px solid var(--color-accent);
+        }
+
+        .tab-close {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            opacity: 0;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .tab:hover .tab-close,
+        .tab.active .tab-close {
+            opacity: 1;
+        }
+
+        .tab-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-icon {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background-color: var(--color-bg-primary);
+            position: relative;
+        }
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    position: relative;
+    align-items: stretch;
+    min-width: 0;
+}
+
+        .line-numbers {
+    min-width: 50px;
+    width: auto;
+    background-color: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    padding: var(--spacing-md) 0;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+    user-select: none;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.line-number {
+    line-height: 1.6;
+    padding-right: var(--spacing-md);
+    padding-left: var(--spacing-md);
+    display: block;
+    text-align: right;
+    box-sizing: border-box;
+}
+
+        .code-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* FIX: Changed text color from almost invisible to fully transparent */
+        textarea#codeEditor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    resize: none;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    color: transparent; /* FIXED: Was rgba(255, 255, 255, 0.01) */
+    caret-color: var(--color-text-primary); /* Cursor color */
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: var(--spacing-md);
+    z-index: 10; /* FIXED: Increased z-index to ensure it's on top */
+    tab-size: 4;
+    font-variant-ligatures: none;
+    overflow-y: auto;
+    overflow-x: auto;
+    margin: 0;
+    opacity: 1; /* FIXED: Ensure it's fully visible to browser */
+    box-sizing: border-box;
+}
+
+        textarea#codeEditor::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        textarea#codeEditor::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        textarea#codeEditor::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        textarea#codeEditor::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .code-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: var(--spacing-md);
+    overflow-y: hidden;
+    overflow-x: hidden;
+    z-index: 1; /* FIXED: Lower z-index than textarea */
+    pointer-events: none;
+    white-space: pre;
+    tab-size: 4;
+    font-variant-ligatures: none;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+        .code-highlight code {
+            background: none !important;
+            padding: 0 !important;
+            color: inherit !important;
+        }
+
+        .code-highlight,
+        .code-highlight * {
+            font-weight: normal !important;
+            font-style: normal !important;
+            letter-spacing: normal !important;
+        }
+
+        .hljs {
+            background: transparent !important;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--color-text-secondary);
+            gap: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .terminal-panel {
+            background-color: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            height: 35%;
+            min-height: 100px;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            height: 35px;
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--color-border);
+            gap: var(--spacing-lg);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            user-select: none;
+            background-color: var(--color-bg-secondary);
+        }
+
+        .terminal-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .terminal-tab {
+            padding: var(--spacing-xs) var(--spacing-md);
+            background-color: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: color 0.15s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .terminal-tab:hover {
+            color: var(--color-text-primary);
+        }
+
+        .terminal-tab.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-left: auto;
+        }
+
+        .terminal-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            font-size: 12px;
+        }
+
+        .terminal-btn:hover {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-primary);
+        }
+
+        .terminal-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: var(--spacing-lg);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .terminal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .terminal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .terminal-output {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .terminal-output.success {
+            color: var(--color-success);
+        }
+
+        .terminal-output.error {
+            color: var(--color-error);
+        }
+
+        .terminal-output.warning {
+            color: var(--color-warning);
+        }
+
+        .terminal-output.info {
+            color: var(--color-accent);
+        }
+
+        .terminal-output.input {
+            color: var(--color-text-muted);
+        }
+
+        .terminal-input-line {
+            border-top: 1px solid var(--color-border);
+            background-color: var(--color-bg-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .terminal-prompt {
+            color: var(--color-text-secondary);
+            user-select: none;
+        }
+
+        .terminal-input-line input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--color-text-primary);
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .terminal-input-line input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .terminal-input-line input:disabled {
+            color: var(--color-text-muted);
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            background-color: var(--color-bg-secondary);
+            border-top: 1px solid var(--color-border);
+            padding: 0 var(--spacing-lg);
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            flex-shrink: 0;
+            user-select: none;
+            gap: var(--spacing-xl);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 0 var(--spacing-md);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s ease;
+        }
+
+        .status-item:hover {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-primary);
+        }
+
+        .status-spacer {
+            flex: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--spacing-xl);
+            min-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            color: var(--color-text-primary);
+        }
+
+        .modal-input {
+            width: 100%;
+            background-color: var(--color-bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--color-text-primary);
+            font-family: var(--font-sans);
+            margin-bottom: var(--spacing-lg);
+            outline: none;
+        }
+
+        .modal-input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--color-bg-hover);
+            color: var(--color-text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .tab {
+                padding: 0 var(--spacing-sm);
+                font-size: 11px;
+            }
+            textarea#codeEditor {
+                font-size: 12px;
+            }
+            .line-numbers {
+                min-width: 40px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="menu-bar">
+        <div class="menu-item">
+            <span>File</span>
+            <div class="menu-dropdown">
+                <div class="menu-item-option" onclick="openFile()">
+                    <span>Open File</span>
+                    <span style="font-size: 10px;">Ctrl+O</span>
+                </div>
+                <div class="menu-item-option" onclick="saveFile()">
+                    <span>Save</span>
+                    <span style="font-size: 10px;">Ctrl+S</span>
+                </div>
+                <div class="menu-item-option" onclick="saveAsFile()">
+                    <span>Save As</span>
+                    <span style="font-size: 10px;">Ctrl+Shift+S</span>
+                </div>
+                <div class="menu-item-option" onclick="newFile()">
+                    <span>New File</span>
+                    <span style="font-size: 10px;">Ctrl+N</span>
+                </div>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span>Edit</span>
+            <div class="menu-dropdown">
+                <div class="menu-item-option" onclick="editorUndo()">Undo</div>
+                <div class="menu-item-option" onclick="editorRedo()">Redo</div>
+                <div style="border-top: 1px solid var(--color-border); margin: 4px 0;"></div>
+                <div class="menu-item-option" onclick="editorSelectAll()">Select All</div>
+            </div>
+        </div>
+        <div class="menu-item">
+            <span>Run</span>
+            <div class="menu-dropdown">
+                <div class="menu-item-option" onclick="runCode()">Run Code</div>
+            </div>
+        </div>
+        <div class="menu-spacer"></div>
+        <button class="menu-btn" onclick="goBackToLab()" title="Back to Lab">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Lab</span>
+        </button>
+    </nav>
+
+    <div class="editor-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span>Languages</span>
+                <div class="sidebar-buttons">
+                    <button class="sidebar-btn" onclick="newFile()" title="New File"><i class="fas fa-file"></i></button>
+                    <button class="sidebar-btn" onclick="openFile()" title="Open File"><i class="fas fa-file-open"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <aside class="ai-panel">
+            <div class="ai-header">AI Assistant</div>
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-message assistant">Ask me anything about your code.</div>
+            </div>
+            <div class="ai-input">
+                <textarea id="aiPrompt" placeholder="Type a message..."></textarea>
+                <button class="ai-send-btn" id="aiSend">Send</button>
+            </div>
+        </aside>
+
+        <div class="editor-main">
+            <div class="tab-bar" id="tabBar"></div>
+
+            <div class="editor-content">
+                <div class="editor-container">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <div class="code-area">
+                        <textarea id="codeEditor" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off" wrap="off" placeholder="Start coding..."></textarea>
+                        <div class="code-highlight" id="codeHighlight"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="terminal-panel">
+                <div class="terminal-header">
+                    <div class="terminal-tabs">
+                        <button class="terminal-tab active" onclick="switchTerminalTab('output')">Output</button>
+                    </div>
+                    <div class="terminal-controls">
+                        <button class="terminal-btn" onclick="runCode()" title="Run"><i class="fas fa-play"></i></button>
+                        <button class="terminal-btn" onclick="clearTerminal()" title="Clear"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="terminal-content" id="terminal">
+                    <div class="terminal-output">Ready to run code...</div>
+                </div>
+                <div class="terminal-input-line">
+                    <span class="terminal-prompt">&gt;</span>
+                    <input id="terminalInput" type="text" placeholder="Type input and press Enter" autocomplete="off" disabled>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">
+            <span id="languageMode">Python</span>
+        </div>
+        <div class="status-item">
+            <span>UTF-8</span>
+        </div>
+        <div class="status-item">
+            <span>LF</span>
+        </div>
+        <div class="status-spacer"></div>
+        <div class="status-item">
+            <span id="lineCol">Ln 1, Col 1</span>
+        </div>
+    </div>
+
+    <div class="modal" id="newFileModal">
+        <div class="modal-content">
+            <div class="modal-title">New File</div>
+            <input type="text" id="newFileName" class="modal-input" placeholder="Enter file name (e.g., main.py)" value="main.py">
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal('newFileModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createNewFile()">Create</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const selectedLang = urlParams.get('lang') || 'python';
+
+let currentLanguage = selectedLang;
+let openFiles = {};
+let activeFile = null;
+let editorHistory = [''];
+let historyIndex = 0;
+let currentTerminalTab = 'output';
+let activeRunSession = null;
+let runListenersAttached = false;
+const GROQ_API_KEY = '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';
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+let aiConversation = [];
+
+const languageConfigs = {
+    python: { ext: '.py', icon: '🐍', name: 'Python' },
+    javascript: { ext: '.js', icon: '⚡', name: 'JavaScript' },
+    java: { ext: '.java', icon: '☕', name: 'Java' },
+    cpp: { ext: '.cpp', icon: '⚙', name: 'C++' },
+    c: { ext: '.c', icon: '⚙', name: 'C' },
+    ruby: { ext: '.rb', icon: '💎', name: 'Ruby' },
+    php: { ext: '.php', icon: '🐘', name: 'PHP' },
+    go: { ext: '.go', icon: '🐹', name: 'Go' },
+    rust: { ext: '.rs', icon: '🦀', name: 'Rust' }
+};
+
+function initializeEditor() {
+    const fileName = `main${languageConfigs[currentLanguage].ext}`;
+    
+    if (!openFiles[fileName]) {
+        let defaultContent = '';
+        switch(currentLanguage) {
+            case 'python':
+                defaultContent = 'print("Hello, World!")';
+                break;
+            case 'javascript':
+                defaultContent = 'console.log("Hello, World!");';
+                break;
+            case 'java':
+                defaultContent = 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}';
+                break;
+            case 'cpp':
+                defaultContent = '#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, World!" << endl;\n    return 0;\n}';
+                break;
+            case 'c':
+                defaultContent = '#include <stdio.h>\n\nint main() {\n    printf("Hello, World!\\n");\n    return 0;\n}';
+                break;
+            case 'go':
+                defaultContent = 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}';
+                break;
+            case 'rust':
+                defaultContent = 'fn main() {\n    println!("Hello, World!");\n}';
+                break;
+            case 'ruby':
+                defaultContent = 'puts "Hello, World!"';
+                break;
+            case 'php':
+                defaultContent = '<?php\necho "Hello, World!\\n";\n?>';
+                break;
+            default:
+                defaultContent = `// ${languageConfigs[currentLanguage].name} Code`;
+        }
+        
+        openFiles[fileName] = {
+            name: fileName,
+            content: defaultContent,
+            language: currentLanguage,
+            path: fileName
+        };
+    }
+    
+    activeFile = fileName;
+    updateEditor();
+    addTab(fileName);
+    document.getElementById('languageMode').textContent = languageConfigs[currentLanguage].name;
+    document.title = `${languageConfigs[currentLanguage].name} - Code Editor`;
+}
+
+function newFile() {
+    document.getElementById('newFileName').value = `main${languageConfigs[currentLanguage].ext}`;
+    document.getElementById('newFileModal').classList.add('active');
+}
+
+function createNewFile() {
+    const fileName = document.getElementById('newFileName').value;
+    if (!fileName) return;
+    
+    const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+    let lang = 'plaintext';
+    for (let l in languageConfigs) {
+        if (languageConfigs[l].ext === ext) {
+            lang = l;
+            break;
+        }
+    }
+    
+    if (!openFiles[fileName]) {
+        openFiles[fileName] = {
+            name: fileName,
+            content: '',
+            language: lang,
+            path: fileName
+        };
+    }
+    
+    activeFile = fileName;
+    updateEditor();
+    addTab(fileName);
+    closeModal('newFileModal');
+    addTerminalOutput(`Created ${fileName}`, 'success');
+}
+
+function openFile() {
+    if (window.electronAPI?.openFileDialog) {
+        window.electronAPI.openFileDialog().then(result => {
+            if (result && result.filePath) {
+                window.electronAPI.readFile(result.filePath).then(content => {
+                    const fileName = result.filePath.split('/').pop() || result.filePath.split('\\').pop();
+                    const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+                    let lang = 'plaintext';
+                    for (let l in languageConfigs) {
+                        if (languageConfigs[l].ext === ext) {
+                            lang = l;
+                            break;
+                        }
+                    }
+                    
+                    openFiles[fileName] = {
+                        name: fileName,
+                        content: content,
+                        language: lang,
+                        path: result.filePath
+                    };
+                    
+                    activeFile = fileName;
+                    updateEditor();
+                    addTab(fileName);
+                    addTerminalOutput(`Opened: ${fileName}`, 'success');
+                });
+            }
+        });
+    }
+}
+
+function saveFile() {
+    if (!activeFile) return;
+    
+    const content = document.getElementById('codeEditor').value;
+    openFiles[activeFile].content = content;
+    
+    if (window.electronAPI?.saveFile) {
+        const filePath = openFiles[activeFile].path;
+        window.electronAPI.saveFile(filePath, content).then(() => {
+            addTerminalOutput(`Saved: ${activeFile}`, 'success');
+        });
+    } else {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+        element.setAttribute('download', activeFile);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        addTerminalOutput(`Saved: ${activeFile}`, 'success');
+    }
+}
+
+function saveAsFile() {
+    if (!activeFile) return;
+    
+    const content = document.getElementById('codeEditor').value;
+    const fileName = prompt('Save as:', activeFile);
+    if (!fileName) return;
+    
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', fileName);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    addTerminalOutput(`Saved as: ${fileName}`, 'success');
+}
+
+function addTab(fileName) {
+    const tabBar = document.getElementById('tabBar');
+    let tab = document.querySelector(`[data-file="${fileName}"]`);
+    
+    if (!tab) {
+        tab = document.createElement('div');
+        tab.className = 'tab active';
+        tab.setAttribute('data-file', fileName);
+        
+        const lang = openFiles[fileName].language;
+        const icon = languageConfigs[lang]?.icon || '📄';
+        
+        tab.innerHTML = `
+            <span class="tab-icon">${icon}</span>
+            <span>${fileName}</span>
+            <span class="tab-close"><i class="fas fa-times"></i></span>
+        `;
+        
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFile = fileName;
+            updateEditor();
+        });
+        
+        const closeBtn = tab.querySelector('.tab-close');
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            delete openFiles[fileName];
+            tab.remove();
+            if (activeFile === fileName) {
+                const remaining = document.querySelector('.tab');
+                if (remaining) {
+                    remaining.click();
+                } else {
+                    activeFile = null;
+                    updateEditor();
+                }
+            }
+        });
+        
+        tabBar.appendChild(tab);
+    } else {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+    }
+}
+
+function updateEditor() {
+    const editor = document.getElementById('codeEditor');
+    const langMode = document.getElementById('languageMode');
+    
+    if (activeFile && openFiles[activeFile]) {
+        const file = openFiles[activeFile];
+        editor.value = file.content;
+        resetHistory(editor.value);
+        langMode.textContent = file.language.toUpperCase();
+        
+        // Force update
+        setTimeout(() => {
+            syntaxHighlight();
+            updateLineNumbers();
+            syncScroll();
+            editor.focus(); // FIXED: Ensure editor gets focus
+            editor.setSelectionRange(0, 0); // FIXED: Place cursor at start
+        }, 10);
+        
+    } else {
+        editor.value = '';
+        resetHistory('');
+        editor.placeholder = 'Select a language or open a file...';
+        langMode.textContent = 'Plain Text';
+    }
+    
+    updateCursorPosition();
+}
+
+function syntaxHighlight() {
+    const code = document.getElementById('codeEditor').value;
+    const highlight = document.getElementById('codeHighlight');
+    const language = activeFile ? openFiles[activeFile].language : 'plaintext';
+    
+    try {
+        let html = hljs.highlight(code, { language, ignoreIllegals: true }).value;
+        highlight.innerHTML = `<code>${html}</code>`;
+    } catch (e) {
+        highlight.innerHTML = `<code>${escapeHtml(code)}</code>`;
+    }
+}
+
+function escapeHtml(text) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function updateLineNumbers() {
+    const editor = document.getElementById('codeEditor');
+    const code = editor.value;
+    const lines = code.split('\n');
+    const count = Math.max(1, lines.length);
+    const container = document.getElementById('lineNumbers');
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 1; i <= count; i++) {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'line-number';
+        lineDiv.textContent = i;
+        fragment.appendChild(lineDiv);
+    }
+
+    container.innerHTML = '';
+    container.appendChild(fragment);
+    syncScroll();
+}
+
+function syncScroll() {
+    const editor = document.getElementById('codeEditor');
+    const highlight = document.getElementById('codeHighlight');
+    const lineNumbers = document.getElementById('lineNumbers');
+    
+    highlight.scrollTop = editor.scrollTop;
+    highlight.scrollLeft = editor.scrollLeft;
+    
+    lineNumbers.scrollTop = editor.scrollTop;
+}
+
+function updateCursorPosition() {
+    const editor = document.getElementById('codeEditor');
+    const text = editor.value.substring(0, editor.selectionStart);
+    const lines = text.split('\n');
+    const line = lines.length;
+    const col = lines[lines.length - 1].length + 1;
+    
+    document.getElementById('lineCol').textContent = `Ln ${line}, Col ${col}`;
+}
+
+// FIXED: Initialize highlight.js
+hljs.configure({ ignoreUnescapedHTML: true });
+
+document.getElementById('codeEditor').addEventListener('input', function() {
+    syntaxHighlight();
+    updateLineNumbers();
+    updateCursorPosition();
+    syncScroll(); // Sync after update
+    pushHistory(this.value);
+});
+document.getElementById('codeEditor').addEventListener('scroll', syncScroll);
+
+['click', 'keyup', 'keydown', 'mouseup', 'focus'].forEach(event => {
+    document.getElementById('codeEditor').addEventListener(event, updateCursorPosition);
+});
+
+document.getElementById('codeEditor').addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const editor = document.getElementById('codeEditor');
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selected = editor.value.substring(start, end);
+        const indentUnit = detectIndentUnit(editor.value);
+        
+        if (selected.includes('\n')) {
+            const lines = selected.split('\n');
+            const indented = lines.map(line => indentUnit + line).join('\n');
+            editor.value = editor.value.substring(0, start) + indented + editor.value.substring(end);
+            editor.selectionStart = start;
+            editor.selectionEnd = start + indented.length;
+        } else {
+            editor.value = editor.value.substring(0, start) + indentUnit + editor.value.substring(end);
+            editor.selectionStart = editor.selectionEnd = start + indentUnit.length;
+        }
+        
+        syntaxHighlight();
+        updateLineNumbers();
+        updateCursorPosition();
+        pushHistory(editor.value);
+    }
+    
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const editor = document.getElementById('codeEditor');
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const value = editor.value;
+        
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        const line = value.slice(lineStart, start);
+        const indentMatch = line.match(/^[\t ]*/);
+        const indent = indentMatch ? indentMatch[0] : '';
+        const trimmedLine = line.trimEnd();
+        const indentUnit = detectIndentUnit(value);
+        
+        let extraIndent = '';
+        if (activeFile && openFiles[activeFile]) {
+            const lang = openFiles[activeFile].language;
+            if (lang === 'python' && trimmedLine.endsWith(':')) {
+                extraIndent = indentUnit;
+            } else if (['javascript', 'java', 'cpp', 'c', 'go', 'rust', 'php'].includes(lang) && /[\{\[\(]$/.test(trimmedLine)) {
+                extraIndent = indentUnit;
+            }
+        } else if (/[\{\[\(]$/.test(trimmedLine)) {
+            extraIndent = indentUnit;
+        }
+        
+        const insert = '\n' + indent + extraIndent;
+        editor.value = value.slice(0, start) + insert + value.slice(end);
+        const newPos = start + insert.length;
+        editor.selectionStart = editor.selectionEnd = newPos;
+        
+        syntaxHighlight();
+        updateLineNumbers();
+        updateCursorPosition();
+        syncScroll();
+        pushHistory(editor.value);
+    }
+});
+
+const terminalInput = document.getElementById('terminalInput');
+if (terminalInput) {
+    terminalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const value = terminalInput.value;
+            terminalInput.value = '';
+            if (!activeRunSession || !window.electronAPI?.sendInput) {
+                return;
+            }
+            window.electronAPI.sendInput(activeRunSession, value);
+            addTerminalOutput(`> ${value}`, 'input');
+        }
+    });
+}
+
+function detectIndentUnit(text) {
+    const lines = text.split('\n');
+    let minSpaces = Infinity;
+    for (const line of lines) {
+        const match = line.match(/^[\t ]+/);
+        if (!match) continue;
+        if (match[0].includes('\t')) return '\t';
+        minSpaces = Math.min(minSpaces, match[0].length);
+    }
+    if (minSpaces !== Infinity) {
+        return ' '.repeat(minSpaces);
+    }
+    return '    ';
+}
+
+function resetHistory(value) {
+    editorHistory = [value];
+    historyIndex = 0;
+}
+
+function pushHistory(value) {
+    if (editorHistory[historyIndex] === value) return;
+    editorHistory = editorHistory.slice(0, historyIndex + 1);
+    editorHistory.push(value);
+    if (editorHistory.length > 200) {
+        editorHistory.shift();
+    }
+    historyIndex = editorHistory.length - 1;
+}
+
+function editorUndo() {
+    const editor = document.getElementById('codeEditor');
+    if (historyIndex <= 0) return;
+    historyIndex = Math.max(0, historyIndex - 1);
+    editor.value = editorHistory[historyIndex];
+    syntaxHighlight();
+    updateLineNumbers();
+    updateCursorPosition();
+    syncScroll();
+}
+
+function editorRedo() {
+    const editor = document.getElementById('codeEditor');
+    if (historyIndex >= editorHistory.length - 1) return;
+    historyIndex++;
+    editor.value = editorHistory[historyIndex];
+    syntaxHighlight();
+    updateLineNumbers();
+    updateCursorPosition();
+    syncScroll();
+}
+
+function editorSelectAll() {
+    const editor = document.getElementById('codeEditor');
+    editor.select();
+    updateCursorPosition();
+}
+
+function setTerminalInputEnabled(enabled) {
+    const input = document.getElementById('terminalInput');
+    if (!input) return;
+    input.disabled = !enabled;
+    input.placeholder = enabled ? 'Type input and press Enter' : 'Run a program to provide input';
+    if (enabled) {
+        input.focus();
+    }
+}
+
+function appendTerminalStream(text, type = 'info') {
+    const terminal = document.getElementById('terminal');
+    if (!terminal) return;
+    let last = terminal.lastElementChild;
+    if (!last || !last.classList.contains('terminal-stream') || last.dataset.streamType !== type) {
+        last = document.createElement('div');
+        last.className = `terminal-output terminal-stream ${type}`;
+        last.dataset.streamType = type;
+        terminal.appendChild(last);
+    }
+    last.textContent += text;
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+function addAiMessage(role, text) {
+    const container = document.getElementById('aiMessages');
+    if (!container) return;
+    const msg = document.createElement('div');
+    msg.className = `ai-message ${role}`;
+    msg.innerHTML = renderAiContent(text);
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+}
+
+function renderAiContent(text) {
+    const parts = String(text).split('```');
+    let html = '';
+    for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 1) {
+            const block = parts[i];
+            let code = block;
+            let lang = '';
+            const match = block.match(/^([a-zA-Z0-9_-]+)\n([\s\S]*)$/);
+            if (match) {
+                lang = match[1];
+                code = match[2];
+            }
+            html += `<pre class="ai-code"><code${lang ? ` data-lang="${escapeHtml(lang)}"` : ''}>${escapeHtml(code)}</code></pre>`;
+        } else {
+            let segment = escapeHtml(parts[i]);
+            segment = segment.replace(/`([^`]+)`/g, '<span class="ai-inline-code">$1</span>');
+            segment = segment.replace(/\n/g, '<br>');
+            html += segment;
+        }
+    }
+    return html;
+}
+
+async function sendAiMessage() {
+    const prompt = document.getElementById('aiPrompt');
+    if (!prompt) return;
+    const content = prompt.value.trim();
+    if (!content) return;
+
+    prompt.value = '';
+    addAiMessage('user', content);
+
+    if (!navigator.onLine) {
+        addAiMessage('error', 'Connection error: No internet connection.');
+        return;
+    }
+
+    aiConversation.push({ role: 'user', content });
+
+    try {
+        const response = await fetch(GROQ_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: GROQ_MODEL,
+                messages: aiConversation,
+                temperature: 0.7,
+                max_completion_tokens: 1024
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            addAiMessage('error', `Error: ${errorText || response.statusText}`);
+            return;
+        }
+
+        const data = await response.json();
+        const reply = data?.choices?.[0]?.message?.content || 'No response.';
+        aiConversation.push({ role: 'assistant', content: reply });
+        addAiMessage('assistant', reply);
+    } catch (error) {
+        addAiMessage('error', 'Connection error: Unable to reach AI service.');
+    }
+}
+
+function attachRunListeners() {
+    if (!window.electronAPI?.onRunOutput || runListenersAttached) return;
+    runListenersAttached = true;
+
+    window.electronAPI.onRunOutput((data) => {
+        if (!activeRunSession || data.sessionId !== activeRunSession) return;
+        const type = data.type === 'stderr' ? 'error' : 'info';
+        appendTerminalStream(data.data, type);
+    });
+
+    window.electronAPI.onRunExit((data) => {
+        if (!activeRunSession || data.sessionId !== activeRunSession) return;
+        addTerminalOutput(`Process exited with code ${data.code ?? 0}`, 'warning');
+        activeRunSession = null;
+        setTerminalInputEnabled(false);
+    });
+}
+
+async function runCode() {
+    if (!activeFile) {
+        addTerminalOutput('Open or create a file first', 'warning');
+        return;
+    }
+    
+    const file = openFiles[activeFile];
+    const code = document.getElementById('codeEditor').value;
+    file.content = code;
+    
+    const terminal = document.getElementById('terminal');
+    if (terminal) {
+        if (currentTerminalTab !== 'output') {
+            switchTerminalTab('output');
+        }
+        terminal.innerHTML = '<div class="terminal-output info">Running ' + file.name + '...</div>';
+    } else {
+        console.warn('Terminal panel removed; output will be logged to console.');
+    }
+
+    if (window.electronAPI?.startRun) {
+        attachRunListeners();
+        if (activeRunSession) {
+            window.electronAPI.stopRun(activeRunSession);
+            activeRunSession = null;
+        }
+        setTerminalInputEnabled(false);
+        try {
+            const result = await window.electronAPI.startRun({
+                language: file.language,
+                code: code,
+                filePath: activeFile
+            });
+            if (result?.error) {
+                addTerminalOutput(result.error, 'error');
+                return;
+            }
+            activeRunSession = result.sessionId;
+            setTerminalInputEnabled(true);
+            return;
+        } catch (error) {
+            addTerminalOutput(`Error: ${error.message}`, 'error');
+            return;
+        }
+    }
+
+    if (window.electronAPI?.runCodeWithInput) {
+        try {
+            const result = await window.electronAPI.runCodeWithInput({
+                language: file.language,
+                code: code,
+                filePath: activeFile,
+                inputs: []
+            });
+            
+            if (result.success) {
+                addTerminalOutput(result.output, 'success');
+            } else {
+                addTerminalOutput(result.output, 'error');
+            }
+        } catch (error) {
+            addTerminalOutput(`Error: ${error.message}`, 'error');
+        }
+    } else {
+        addTerminalOutput('Electron API not available. Running in browser mode...', 'warning');
+        if (file.language === 'javascript') {
+            try {
+                const originalConsoleLog = console.log;
+                const originalConsoleError = console.error;
+                
+                let output = '';
+                console.log = function(...args) {
+                    output += args.join(' ') + '\n';
+                };
+                console.error = function(...args) {
+                    output += 'ERROR: ' + args.join(' ') + '\n';
+                };
+                
+                eval(code);
+                
+                console.log = originalConsoleLog;
+                console.error = originalConsoleError;
+                
+                addTerminalOutput(output, 'success');
+            } catch (error) {
+                addTerminalOutput(`Error: ${error.message}`, 'error');
+            }
+        } else {
+            addTerminalOutput(
+                `${file.language.toUpperCase()} execution requires Electron backend.\n` +
+                `Current code:\n\`\`\`${file.language}\n${code}\n\`\`\``,
+                'warning'
+            );
+        }
+    }
+}
+
+function addTerminalOutput(text, type = 'info') {
+    const terminal = document.getElementById('terminal');
+    if (!terminal) {
+        console.log(text);
+        return;
+    }
+
+    if (currentTerminalTab !== 'output') {
+        switchTerminalTab('output');
+    }
+    const output = document.createElement('div');
+    output.className = `terminal-output ${type}`;
+    output.textContent = text;
+    terminal.appendChild(output);
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+function clearTerminal() {
+    const terminal = document.getElementById('terminal');
+    if (terminal) {
+        terminal.innerHTML = '<div class="terminal-output">Ready to run code...</div>';
+    }
+}
+
+function switchTerminalTab(tab) {
+    currentTerminalTab = tab;
+    document.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = document.querySelector(`[onclick="switchTerminalTab('${tab}')"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key.toLowerCase()) {
+            case 's':
+                e.preventDefault();
+                saveFile();
+                break;
+            case 'o':
+                e.preventDefault();
+                openFile();
+                break;
+            case 'n':
+                e.preventDefault();
+                newFile();
+                break;
+            case 'z':
+                if (!e.shiftKey) {
+                    e.preventDefault();
+                    editorUndo();
+                }
+                break;
+            case 'y':
+                e.preventDefault();
+                editorRedo();
+                break;
+            case 'a':
+                e.preventDefault();
+                editorSelectAll();
+                break;
+        }
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        runCode();
+    }
+});
+
+function goBackToLab() {
+    window.location.href = 'langs.html';
+}
+
+// FIXED: Proper initialization with focus
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEditor();
+    setTerminalInputEnabled(false);
+    attachRunListeners();
+    const aiSend = document.getElementById('aiSend');
+    const aiPrompt = document.getElementById('aiPrompt');
+    if (aiSend) {
+        aiSend.addEventListener('click', sendAiMessage);
+    }
+    if (aiPrompt) {
+        aiPrompt.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAiMessage();
+            }
+        });
+    }
+    
+    // Ensure editor gets focus after everything loads
+    setTimeout(function() {
+        const editor = document.getElementById('codeEditor');
+        if (editor) {
+            editor.focus();
+            // Trigger initial update
+            syntaxHighlight();
+            updateLineNumbers();
+            updateCursorPosition();
+        }
+    }, 200);
+});
+
+// Also add this to ensure the editor updates when window gains focus
+window.addEventListener('focus', function() {
+    const editor = document.getElementById('codeEditor');
+    if (editor && activeFile && openFiles[activeFile]) {
+        editor.focus();
+    }
+});
+</script>
+</body>
+</html>
