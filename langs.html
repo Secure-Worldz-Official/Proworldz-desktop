@@ -6,22 +6,25 @@
     <title>Programming Language Lab | ProWorldz</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link rel="icon" type="image/png" href="assets/icon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     
     <style>
         :root {
-            --primary-white: #ffffff;
-            --primary-hover: #e0e0e0;
-            --secondary-gray: #d0d0d0;
-            --accent-gray: #a0a0a0;
-            --dark-bg: #000000;
-            --darker-bg: #050505;
-            --card-bg: #111111;
-            --card-hover: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #a3a3a3;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --border-hover: rgba(255, 255, 255, 0.2);
+            --primary-white: #f2c9a7;
+            --primary-hover: #e9b38f;
+            --secondary-gray: #d9b8a3;
+            --accent-gray: #7a5943;
+            --dark-bg: #f8ddc7;
+            --darker-bg: #f2c9ad;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --card-hover: rgba(255, 255, 255, 0.72);
+            --text-primary: #3b2a1f;
+            --text-secondary: #6f4f3a;
+            --border-color: rgba(121, 87, 66, 0.15);
+            --border-hover: rgba(121, 87, 66, 0.25);
             --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -32,8 +35,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--dark-bg);
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.7) 0%, transparent 45%),
+                        radial-gradient(circle at 90% 18%, rgba(255, 255, 255, 0.45) 0%, transparent 50%),
+                        linear-gradient(180deg, #fff6ee 0%, #f7d9c6 55%, #e9b797 100%);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
@@ -90,6 +95,7 @@
             margin: 2rem auto 3rem;
             max-width: 800px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 18px 40px rgba(111, 79, 58, 0.18);
         }
 
         .status-header {
@@ -108,7 +114,7 @@
         }
 
         .refresh-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.6);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 0.5rem 1.25rem;
@@ -123,7 +129,7 @@
         }
 
         .refresh-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.8);
             transform: translateY(-2px);
         }
 
@@ -134,7 +140,7 @@
         }
 
         .status-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.55);
             border-radius: 10px;
             padding: 1rem;
             display: flex;
@@ -153,13 +159,13 @@
         }
 
         .status-icon.installed {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--primary-white);
+            background: rgba(242, 201, 167, 0.7);
+            color: #7a5943;
             border: 1px solid var(--border-color);
         }
 
         .status-icon.not-installed {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.55);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
         }
@@ -195,6 +201,7 @@
             transition: var(--transition-smooth);
             border: 1px solid var(--border-color);
             cursor: pointer;
+            box-shadow: 0 20px 45px rgba(111, 79, 58, 0.16);
         }
 
         .language-card::before {
@@ -214,6 +221,7 @@
             transform: translateY(-10px);
             border-color: var(--border-hover);
             background: var(--card-hover);
+            box-shadow: 0 26px 55px rgba(111, 79, 58, 0.2);
         }
 
         .language-card:hover::before {
@@ -246,13 +254,13 @@
         }
 
         .installation-badge.installed {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--primary-white);
+            background: rgba(242, 201, 167, 0.75);
+            color: #7a5943;
             border: 1px solid var(--border-color);
         }
 
         .installation-badge.not-installed {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.6);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
         }
@@ -268,7 +276,7 @@
             width: 80px;
             height: 80px;
             border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -279,7 +287,7 @@
 
         .language-card:hover .language-icon-container {
             border-color: var(--primary-white);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
             transform: rotate(5deg) scale(1.1);
         }
 
@@ -327,7 +335,7 @@
             width: 100%;
             padding: 1.25rem;
             background: var(--primary-white);
-            color: var(--dark-bg);
+            color: #2a1a0f;
             border: none;
             border-radius: 12px;
             font-size: 1.1rem;
@@ -350,7 +358,7 @@
         .access-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.6);
             color: var(--text-secondary);
         }
 
@@ -433,7 +441,7 @@
         }
 
         .modal-btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.65);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
         }
@@ -470,7 +478,7 @@
         }
 
         .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.6);
             border-top: 3px solid var(--primary-white);
             border-radius: 50%;
             width: 24px;
